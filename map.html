@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mudug School Risk Mapping Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; }
+        header { background: #2c3e50; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        #map { height: calc(100vh - 80px); width: 100%; }
+        .legend { background: white; padding: 10px; line-height: 1.5em; border-radius: 5px; box-shadow: 0 0 15px rgba(0,0,0,0.2); font-size: 14px; }
+        .legend i { width: 18px; height: 18px; float: left; margin-right: 8px; opacity: 0.7; border-radius: 50%; }
+        .info-panel { position: absolute; top: 100px; right: 20px; z-index: 1000; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 280px; max-height: 80vh; overflow-y: auto; }
+        .risk-high { color: #e74c3c; font-weight: bold; }
+        .risk-medium { color: #f39c12; font-weight: bold; }
+        .risk-low { color: #2ecc71; font-weight: bold; }
+        .pop-table { width: 100%; font-size: 12px; border-collapse: collapse; margin-top: 10px; }
+        .pop-table th, .pop-table td { text-align: left; padding: 4px; border-bottom: 1px solid #eee; }
+        .pop-table th { background: #f8f9fa; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Mudug School Risk & Population Mapping</h1>
+    <div style="display: flex; gap: 20px; align-items: center;">
+        <span>2023 - 2024 Data Analysis</span>
+        <a href="index.html" style="color: #ecf0f1; text-decoration: none; font-size: 0.9rem; border: 1px solid #ecf0f1; padding: 4px 8px; border-radius: 4px;">&larr; Back to Landing</a>
+    </div>
+</header>
+
+<div id="map"></div>
+
+<div class="info-panel">
+    <h3>Summary</h3>
+    <div id="stats">
+        <p>Total Schools: <span id="total-schools">0</span></p>
+        <p>High Risk: <span id="high-risk" class="risk-high">0</span></p>
+        <p>Medium Risk: <span id="medium-risk" class="risk-medium">0</span></p>
+        <p>Low Risk: <span id="low-risk" class="risk-low">0</span></p>
+    </div>
+
+    <h3 style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px;">Child Population (Est)</h3>
+    <table class="pop-table">
+        <thead>
+            <tr>
+                <th>District</th>
+                <th>Total Pop</th>
+                <th>Under 15</th>
+            </tr>
+        </thead>
+        <tbody id="pop-body">
+            <!-- Populated by JS -->
+        </tbody>
+    </table>
+    <p style="font-size: 10px; color: #777; margin-top: 5px;">*Data based on 2019-2022 UN projections.</p>
+</div>
+
+<script src="map_data.js"></script>
+<script src="pop_data.js"></script>
+<script>
+    // Initialize Map centered on Mudug, Somalia
+    const map = L.map('map').setView([6.5, 47.5], 7);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Marker Icons
+    const schoolIcon = (color) => L.divIcon({
+        className: 'custom-div-icon',
+        html: `<div style="background-color: ${color}; width: 15px; height: 15px; border-radius: 50%; border: 2px solid white;"></div>`,
+        iconSize: [15, 15],
+        iconAnchor: [7, 7]
+    });
+
+    const conflictIcon = (year) => L.divIcon({
+        className: 'conflict-icon',
+        html: `<div style="background-color: ${year === 2024 ? '#34495e' : '#95a5a6'}; width: 6px; height: 6px; border-radius: 50%; opacity: 0.8;"></div>`,
+        iconSize: [6, 6],
+        iconAnchor: [3, 3]
+    });
+
+    // Populate Stats
+    document.getElementById('total-schools').innerText = schoolData.length;
+    document.getElementById('high-risk').innerText = schoolData.filter(s => s.risk === 'High').length;
+    document.getElementById('medium-risk').innerText = schoolData.filter(s => s.risk === 'Medium').length;
+    document.getElementById('low-risk').innerText = schoolData.filter(s => s.risk === 'Low').length;
+
+    // Populate Population Table
+    const popBody = document.getElementById('pop-body');
+    populationData.forEach(p => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${p.district}</td>
+            <td>${p.total_pop.toLocaleString()}</td>
+            <td>${p.children_u15.toLocaleString()}</td>
+        `;
+        popBody.appendChild(row);
+    });
+
+    // Add Conflict Events
+    conflictData.forEach(event => {
+        L.marker([event.lat, event.lon], { icon: conflictIcon(event.year) })
+            .bindPopup(`<b>Conflict (${event.year}): ${event.name}</b><br>Actors: ${event.side_a} vs ${event.side_b}`)
+            .addTo(map);
+    });
+
+    // Add Schools
+    schoolData.forEach(school => {
+        const color = school.risk === 'High' ? '#e74c3c' : (school.risk === 'Medium' ? '#f39c12' : '#2ecc71');
+        L.marker([school.lat, school.lon], { icon: schoolIcon(color) })
+            .bindPopup(`
+                <b>${school.name}</b><br>
+                District: ${school.district}<br>
+                Risk: <span class="risk-${school.risk.toLowerCase()}">${school.risk}</span><br>
+                Nearest Conflict Year: ${school.conflict_year}<br>
+                Distance: ${school.distance} km
+            `)
+            .addTo(map);
+    });
+
+    // Legend
+    const legend = L.control({position: 'bottomleft'});
+    legend.onAdd = function (map) {
+        const div = L.DomUtil.create('div', 'legend');
+        div.innerHTML += '<h4>Legend</h4>';
+        div.innerHTML += '<i style="background: #e74c3c"></i> High Risk (&le;10km)<br>';
+        div.innerHTML += '<i style="background: #f39c12"></i> Medium Risk (10-25km)<br>';
+        div.innerHTML += '<i style="background: #2ecc71"></i> Low Risk (>25km)<br>';
+        div.innerHTML += '<i style="background: #34495e"></i> Conflict Event (2024)<br>';
+        div.innerHTML += '<i style="background: #95a5a6"></i> Conflict Event (2023)<br>';
+        return div;
+    };
+    legend.addTo(map);
+
+</script>
+</body>
+</html>
