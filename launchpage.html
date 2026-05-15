@@ -3,411 +3,339 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mudug Education Continuity Project</title>
+    <title>Mudug Strategic Response | Data-Driven Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        :root {
+            --primary: #1a2a3a;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --bg: #f4f7f6;
+            --text: #2c3e50;
+            --card-bg: #ffffff;
+        }
         body {
             margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-            color: #333;
-            line-height: 1.6;
-            scroll-behavior: smooth;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
         }
-        .hero {
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        header {
+            background-color: var(--primary);
             color: white;
-            padding: 100px 20px;
-            text-align: center;
-        }
-        .hero h1 {
-            font-size: 3rem;
-            margin-bottom: 20px;
-        }
-        .hero p {
-            font-size: 1.2rem;
-            max-width: 800px;
-            margin: 0 auto 30px;
-            opacity: 0.9;
-        }
-        .cta-button {
-            display: inline-block;
-            background-color: #e74c3c;
-            color: white;
-            padding: 15px 30px;
-            font-size: 1.1rem;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background 0.3s;
-            font-weight: bold;
-            margin: 10px;
-        }
-        .cta-button:hover {
-            background-color: #c0392b;
-        }
-        .cta-button.secondary {
-            background-color: transparent;
-            border: 2px solid white;
-        }
-        .cta-button.secondary:hover {
-            background-color: rgba(255,255,255,0.1);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         .container {
-            max-width: 1000px;
-            margin: 50px auto;
-            padding: 0 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
         }
-        .features {
+        /* KPI Ribbon */
+        .kpi-ribbon {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-top: 50px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
-        .feature-box {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
+        .kpi-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            border-top: 4px solid #2c3e50;
-        }
-        .feature-box h3 {
-            margin-top: 0;
-            color: #2c3e50;
-        }
-        .report-section {
-            background: white;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin-top: 50px;
-        }
-        .report-section h2 {
-            color: #2c3e50;
-            border-bottom: 2px solid #e74c3c;
-            padding-bottom: 10px;
-            margin-top: 40px;
-        }
-        .charts-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 30px;
-            margin: 30px 0;
-        }
-        .chart-box {
-            padding: 20px;
-            border: 1px solid #eee;
-            border-radius: 8px;
             text-align: center;
+            border-bottom: 4px solid var(--secondary);
         }
-        .report-section table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
+        .kpi-card.danger { border-bottom-color: var(--accent); }
+        .kpi-card h3 {
+            margin: 0;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #7f8c8d;
         }
-        .report-section th, .report-section td {
-            text-align: left;
-            padding: 12px;
+        .kpi-card .value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin: 0.5rem 0;
+            color: var(--primary);
+        }
+
+        /* Action Center */
+        .action-center {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        .main-cta {
+            background: linear-gradient(135deg, var(--primary) 0%, #2c3e50 100%);
+            color: white;
+            padding: 3rem;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .main-cta h2 { font-size: 2rem; margin-top: 0; }
+        .btn-group { display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap; }
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+        .btn-primary { background: var(--secondary); color: white; }
+        .btn-primary:hover { background: #2980b9; transform: translateY(-2px); }
+        .btn-outline { border: 2px solid white; color: white; }
+        .btn-outline:hover { background: rgba(255,255,255,0.1); }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+        .card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.25rem;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+
+        /* News Ticker */
+        .news-sidebar {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .news-item {
+            padding: 1rem 0;
             border-bottom: 1px solid #eee;
         }
-        .report-section th {
-            background-color: #f8f9fa;
-        }
+        .news-item:last-child { border-bottom: none; }
+        .news-item h4 { margin: 0 0 0.3rem 0; font-size: 0.95rem; }
+        .news-item a { color: var(--secondary); text-decoration: none; font-size: 0.85rem; font-weight: 700; }
+
         footer {
             text-align: center;
-            padding: 40px 20px;
+            padding: 3rem;
+            color: #95a5a6;
             font-size: 0.9rem;
-            color: #777;
         }
-        .news-card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border-left: 5px solid #e67e22;
-            transition: transform 0.2s;
-        }
-        .news-card:hover {
-            transform: translateY(-5px);
+
+        /* Table Styling */
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th { text-align: left; padding: 1rem; background: #f8f9fa; color: #7f8c8d; font-size: 0.75rem; text-transform: uppercase; }
+        td { padding: 1rem; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+
+        @media (max-width: 900px) {
+            .action-center, .dashboard-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-    <section class="hero">
-        <h1>Mudug Education Continuity</h1>
-        <p>Analyzing the impact of conflict on educational infrastructure in the Mudug region to ensure safe and accessible learning for all students.</p>
-        <a href="map.html" class="cta-button">Launch Risk Mapping Dashboard</a>
-        <a href="#report" class="cta-button secondary">Read Visual Risk Report</a>
-    </section>
+    <header>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="background: var(--secondary); width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.5rem; color: white;">M</div>
+            <h1 style="margin: 0; font-size: 1.2rem; letter-spacing: 1px; text-transform: uppercase;">Mudug Strategic Response</h1>
+        </div>
+        <div style="font-size: 0.85rem; opacity: 0.8;">Data Refresh: <span id="current-date"></span></div>
+    </header>
 
     <div class="container">
-        <div class="features">
-            <div class="feature-box">
-                <h3>Risk Proximity Analysis</h3>
-                <p>Interactive mapping of 47 schools against 2023-2024 conflict events to identify high-risk zones for immediate intervention.</p>
+        <!-- KPI Ribbon -->
+        <div class="kpi-ribbon">
+            <div class="kpi-card">
+                <h3>Total Region IDPs</h3>
+                <div class="value" id="kpi-idps">0</div>
+                <div style="font-size: 0.7rem; color: #95a5a6;">Source: OCHA HDX</div>
             </div>
-            <div class="feature-box">
-                <h3>Evidence-Based Planning</h3>
-                <p>Utilizing verified data from OCHA, ACLED, and HDX to support EBI's strategic decision-making in the Somalia region.</p>
+            <div class="kpi-card danger">
+                <h3>Critical Risk Schools</h3>
+                <div class="value" id="kpi-high-risk">0</div>
+                <div style="font-size: 0.7rem; color: #95a5a6;">Proximity &le; 10km</div>
             </div>
-            <div class="feature-box">
-                <h3>Resource Optimization</h3>
-                <p>Prioritizing schools within 10km of conflict clusters to ensure infrastructure and personnel are protected and supported.</p>
+            <div class="kpi-card">
+                <h3>Vulnerable Population</h3>
+                <div class="value" id="kpi-u18">0</div>
+                <div style="font-size: 0.7rem; color: #95a5a6;">Children Under 18</div>
+            </div>
+            <div class="kpi-card danger">
+                <h3>Flood Incidents</h3>
+                <div class="value" id="kpi-floods">0</div>
+                <div style="font-size: 0.7rem; color: #95a5a6;">Reported (2025)</div>
             </div>
         </div>
 
-        <!-- Recent News & Alerts Section -->
-        <section class="news-section" style="margin-top: 50px;">
-            <h2 style="color: #2c3e50; border-bottom: 2px solid #e67e22; padding-bottom: 10px;">Recent News & Alerts (GDELT Real-Time)</h2>
-            <div id="news-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
-                <!-- News cards will be injected here -->
-            </div>
-        </section>
-
-        <section id="report" class="report-section">
-            <h1>Mudug School Risk Proximity Report (2023-2024)</h1>
-            <p><strong>Prepared for:</strong> EBI Education Continuity Project</p>
-
-            <h2>1. Risk Distribution Overview</h2>
-            <p>Visual summary of school vulnerability. Analysis performed using a <strong>GeoPandas Spatial Join</strong> with mathematically verified 10,000-meter (10km) buffers around 2023-2024 conflict points. Approximately 57% of the population is under age 15, making these high-risk areas a top humanitarian priority.</p>
-            <div class="charts-container">
-                <div class="chart-box">
-                    <h3 style="color: #2c3e50;">Overall Risk Levels</h3>
-                    <canvas id="riskPieChart"></canvas>
-                </div>
-                <div class="chart-box">
-                    <h3 style="color: #2c3e50;">Risk by District</h3>
-                    <canvas id="districtBarChart"></canvas>
+        <!-- Action Center -->
+        <div class="action-center">
+            <div class="main-cta">
+                <h2>Interactive Risk Explorer</h2>
+                <p style="opacity: 0.8; max-width: 500px;">Deploy strategic interventions by analyzing the intersection of conflict zones, climate hazards, and educational infrastructure in real-time.</p>
+                <div class="btn-group">
+                    <a href="map.html" class="btn btn-primary">Launch Full Dashboard &rarr;</a>
+                    <a href="map.html" class="btn btn-outline">Analyze Hotspots</a>
                 </div>
             </div>
-
-            <h2>2. District-Level Demographic Profile & Displacement</h2>
-            <p>Mudug faces significant pressure from internal displacement, with over <strong>70,000 IDPs</strong> recorded in the region. This, combined with a high proportion of children (&le;18), creates a critical need for educational stability.</p>
-            
-            <div id="hotspot-section" style="margin-bottom: 30px;">
-                <h3 style="color: #c0392b; border-left: 5px solid #e74c3c; padding-left: 10px;">Critical Hotspots (Highest Weighted Risk)</h3>
-                <p>These schools are identified as being in the most volatile zones based on cumulative conflict intensity and proximity.</p>
-                <div id="hotspot-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                    <!-- Top 4 hotspots will be injected here -->
+            <div class="card">
+                <h2>Recent Alerts</h2>
+                <div class="news-sidebar" id="news-container">
+                    <!-- Loaded via JS -->
                 </div>
             </div>
+        </div>
 
-            <div id="idp-banner" style="background: #ebf5fb; padding: 20px; border-radius: 8px; border-left: 5px solid #3498db; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h3 style="margin: 0; color: #2980b9;">Total IDPs in Mudug Region</h3>
-                    <p style="margin: 5px 0 0 0; color: #7f8c8d;">Internally Displaced Persons (OCHA 2022)</p>
+        <!-- Analytics Grid -->
+        <div class="dashboard-grid">
+            <div class="card">
+                <h2>District Demographic Profile</h2>
+                <div style="height: 300px;">
+                    <canvas id="demographicBarChart"></canvas>
                 </div>
-                <div style="font-size: 2.5rem; font-weight: bold; color: #2c3e50;" id="idp-count-val">70,882</div>
             </div>
-            <div class="chart-box" style="margin-bottom: 30px;">
-                <canvas id="demographicBarChart"></canvas>
+            <div class="card">
+                <h2>Vulnerable Child Comparison</h2>
+                <div style="height: 300px;">
+                    <canvas id="u18ComparisonChart"></canvas>
+                </div>
             </div>
-
-            <div class="chart-box" style="margin-bottom: 30px;">
-                <canvas id="u18ComparisonChart"></canvas>
+            <div class="card" style="grid-column: span 2;">
+                <h2>Risk Distribution Overview</h2>
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+                    <div style="height: 250px;">
+                        <canvas id="riskPieChart"></canvas>
+                    </div>
+                    <div style="height: 250px;">
+                        <canvas id="districtBarChart"></canvas>
+                    </div>
+                </div>
             </div>
+        </div>
 
-            <h2>3. Priority Action List (Weighted Risk)</h2>
-            <p><strong>High Risk Schools:</strong> Ranked by <strong>Risk Intensity Score</strong>, which factors in multiple nearby conflict events, their severity (deaths), and recency (2024 events are weighted higher).</p>
-            <table id="high-risk-table">
-                <thead>
-                    <tr>
-                        <th>School Name</th>
-                        <th>District</th>
-                        <th>Intensity Score</th>
-                        <th>Min Distance</th>
-                        <th>Conflict Year</th>
-                    </tr>
-                </thead>
-                <tbody id="high-risk-body">
-                    <!-- Dynamic Rows -->
-                </tbody>
-            </table>
-
-            <p><strong>Medium Risk Schools:</strong> Potential displacement hubs or at risk of future escalation.</p>
-            <table id="medium-risk-table">
-                <thead>
-                    <tr>
-                        <th>School Name</th>
-                        <th>District</th>
-                        <th>Intensity Score</th>
-                        <th>Min Distance</th>
-                        <th>Conflict Year</th>
-                    </tr>
-                </thead>
-                <tbody id="medium-risk-body">
-                    <!-- Dynamic Rows -->
-                </tbody>
-            </table>
-
-            <h2>4. Planning Recommendations</h2>
-            <ol>
-                <li><strong>Galkayo Focus:</strong> Gaalkacyo remains the highest priority area, containing the majority of both high and medium-risk schools.</li>
-                <li><strong>Extended Buffer:</strong> The inclusion of an 11-25km buffer identifies 3 additional schools (Midnimo, Qorqora, Docol) that may be impacted by population displacement.</li>
-                <li><strong>Contingency Hubs:</strong> The 34 low-risk schools should be evaluated for their capacity to absorb additional students during escalations.</li>
-            </ol>
+        <section id="report" style="margin-top: 4rem;">
+            <div class="card">
+                <h2>Priority Response Matrix</h2>
+                <p style="font-size: 0.9rem; color: #7f8c8d; margin-bottom: 2rem;">Ranking facilities by Weighted Risk Intensity (Conflict Proximity + Severity + Recency).</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Facility Name</th>
+                            <th>District</th>
+                            <th style="text-align: center;">Risk Score</th>
+                            <th style="text-align: center;">Proximity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="high-risk-body">
+                        <!-- Dynamic -->
+                    </tbody>
+                </table>
+            </div>
         </section>
     </div>
 
     <footer>
-        &copy; 2026 Education Continuity Project | Data Sources: OCHA, ACLED, HDX, GDELT
+        &copy; 2026 Education Continuity Project | Operationalized by EBI | Data: OCHA, ACLED, GDELT, IOM
     </footer>
 
     <script src="map_data.js"></script>
     <script src="news_data.js"></script>
     <script src="pop_u18_data.js"></script>
+    <script src="flood_data.js"></script>
     <script>
-        // --- CHARTS INITIALIZATION ---
         window.onload = function() {
-            // Update IDP count if available
-            if (typeof mudugIDPStats !== 'undefined') {
-                document.getElementById('idp-count-val').innerText = mudugIDPStats.total_idps.toLocaleString();
+            document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+            // Populate KPIs
+            if (typeof mudugIDPStats !== 'undefined') document.getElementById('kpi-idps').innerText = mudugIDPStats.total_idps.toLocaleString();
+            if (typeof schoolData !== 'undefined') document.getElementById('kpi-high-risk').innerText = schoolData.filter(s => s.risk === 'High').length;
+            if (typeof popU18Data !== 'undefined') {
+                const totalU18 = popU18Data.idps_u18_settlements + popU18Data.residents_u18_cities + popU18Data.idps_u18_cities + popU18Data.residents_u18_settlements;
+                document.getElementById('kpi-u18').innerText = totalU18.toLocaleString();
             }
+            if (typeof floodData !== 'undefined') document.getElementById('kpi-floods').innerText = floodData.length;
 
-            // Populate Tables from map_data.js
+            // Populate Table
             const highRiskBody = document.getElementById('high-risk-body');
-            const mediumRiskBody = document.getElementById('medium-risk-body');
-            
-            // Sort schools by risk score descending
             const sortedSchools = [...schoolData].sort((a, b) => b.risk_score - a.risk_score);
-            
-            // Populate Hotspots
-            const hotspotList = document.getElementById('hotspot-list');
-            sortedSchools.slice(0, 4).forEach(school => {
-                const card = document.createElement('div');
-                card.style = "background: #fff; padding: 15px; border: 1px solid #f5b7b1; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center;";
-                card.innerHTML = `
-                    <h4 style="margin: 0; color: #c0392b;">${school.name}</h4>
-                    <p style="font-size: 0.8rem; color: #7f8c8d; margin: 5px 0;">${school.district}</p>
-                    <div style="font-size: 1.2rem; font-weight: bold; color: #e74c3c;">${school.risk_score}</div>
-                    <div style="font-size: 0.7rem; color: #999;">Intensity Score</div>
+            sortedSchools.slice(0, 10).forEach(s => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${s.name}</td>
+                    <td>${s.district}</td>
+                    <td style="text-align: center;"><span style="color: ${s.risk === 'High' ? '#e74c3c' : '#f39c12'}; font-weight: bold;">${s.risk_score}</span></td>
+                    <td style="text-align: center;">${s.distance} km</td>
                 `;
-                hotspotList.appendChild(card);
+                highRiskBody.appendChild(row);
             });
 
-            sortedSchools.forEach(school => {
-                const row = `<tr>
-                    <td>${school.name}</td>
-                    <td>${school.district}</td>
-                    <td style="font-weight: bold; color: ${school.risk === 'High' ? '#e74c3c' : '#f39c12'}">${school.risk_score}</td>
-                    <td>${school.distance} km</td>
-                    <td>${school.conflict_year}</td>
-                </tr>`;
-                
-                if (school.risk === 'High') {
-                    highRiskBody.innerHTML += row;
-                } else if (school.risk === 'Medium') {
-                    mediumRiskBody.innerHTML += row;
-                }
-            });
-
-            // Risk Pie Chart
-            const highCount = schoolData.filter(s => s.risk === 'High').length;
-            const medCount = schoolData.filter(s => s.risk === 'Medium').length;
-            const lowCount = schoolData.filter(s => s.risk === 'Low').length;
-
-            const riskCtx = document.getElementById('riskPieChart').getContext('2d');
-            new Chart(riskCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['High Risk (&le;10km)', 'Medium Risk (11-25km)', 'Low Risk (>25km)'],
-                    datasets: [{
-                        data: [highCount, medCount, lowCount],
-                        backgroundColor: ['#e74c3c', '#f39c12', '#2ecc71'],
-                        hoverOffset: 4
-                    }]
-                },
-                options: { plugins: { legend: { position: 'bottom' } } }
-            });
-
-            // District Risk Bar Chart
-            const districts = [...new Set(schoolData.map(s => s.district))];
-            const distDatasets = [
-                { label: 'High Risk', data: districts.map(d => schoolData.filter(s => s.district === d && s.risk === 'High').length), backgroundColor: '#e74c3c' },
-                { label: 'Medium Risk', data: districts.map(d => schoolData.filter(s => s.district === d && s.risk === 'Medium').length), backgroundColor: '#f39c12' },
-                { label: 'Low Risk', data: districts.map(d => schoolData.filter(s => s.district === d && s.risk === 'Low').length), backgroundColor: '#2ecc71' }
-            ];
-
-            const distCtx = document.getElementById('districtBarChart').getContext('2d');
-            new Chart(distCtx, {
-                type: 'bar',
-                data: {
-                    labels: districts,
-                    datasets: distDatasets
-                },
-                options: {
-                    scales: { x: { stacked: true }, y: { stacked: true } },
-                    plugins: { legend: { position: 'bottom' } }
-                }
-            });
-
-            // Demographic Profile Chart
-            const demoCtx = document.getElementById('demographicBarChart').getContext('2d');
-            new Chart(demoCtx, {
+            // --- Charts ---
+            const ctx1 = document.getElementById('demographicBarChart').getContext('2d');
+            new Chart(ctx1, {
                 type: 'bar',
                 data: {
                     labels: ['Galkayo', 'Galdogob', 'Hobyo', 'Jariban', 'Harardhere'],
-                    datasets: [
-                        { label: 'Total Population', data: [501542, 115009, 111550, 94255, 42372], backgroundColor: '#34495e' },
-                        { label: 'Children Under 18', data: [310956, 71306, 69161, 58438, 26271], backgroundColor: '#3498db' }
-                    ]
+                    datasets: [{ label: 'Children Under 18', data: [310956, 71306, 69161, 58438, 26271], backgroundColor: '#3498db' }]
                 },
-                options: {
-                    indexAxis: 'y',
-                    plugins: { 
-                        title: { display: true, text: 'District Demographic Profile' },
-                        legend: { position: 'bottom' }
-                    }
-                }
+                options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
 
-            // Under-18 Comparison Chart
-            const u18Ctx = document.getElementById('u18ComparisonChart').getContext('2d');
-            new Chart(u18Ctx, {
+            const ctx2 = document.getElementById('u18ComparisonChart').getContext('2d');
+            new Chart(ctx2, {
                 type: 'bar',
                 data: {
-                    labels: ['IDPs in Rural Settlements', 'Resident Children in Cities'],
-                    datasets: [{
-                        label: 'Children Under 18 (Estimated)',
-                        data: [popU18Data.idps_u18_settlements, popU18Data.residents_u18_cities],
-                        backgroundColor: ['#e67e22', '#2980b9'],
-                        borderWidth: 1
-                    }]
+                    labels: ['IDPs (Rural)', 'Residents (Urban)'],
+                    datasets: [{ data: [popU18Data.idps_u18_settlements, popU18Data.residents_u18_cities], backgroundColor: ['#e67e22', '#2980b9'] }]
                 },
-                options: {
-                    plugins: {
-                        title: { display: true, text: 'Vulnerable Population Comparison (Under 18)' },
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
-                }
+                options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
 
-            // --- NEWS LOADER ---
+            const ctx3 = document.getElementById('riskPieChart').getContext('2d');
+            new Chart(ctx3, {
+                type: 'doughnut',
+                data: {
+                    labels: ['High', 'Med', 'Low'],
+                    datasets: [{ data: [schoolData.filter(s => s.risk === 'High').length, schoolData.filter(s => s.risk === 'Medium').length, schoolData.filter(s => s.risk === 'Low').length], backgroundColor: ['#e74c3c', '#f39c12', '#2ecc71'] }]
+                },
+                options: { maintainAspectRatio: false }
+            });
+
+            const districts = [...new Set(schoolData.map(s => s.district))];
+            const ctx4 = document.getElementById('districtBarChart').getContext('2d');
+            new Chart(ctx4, {
+                type: 'bar',
+                data: {
+                    labels: districts,
+                    datasets: [{ label: 'High Risk', data: districts.map(d => schoolData.filter(s => s.district === d && s.risk === 'High').length), backgroundColor: '#e74c3c' }]
+                },
+                options: { maintainAspectRatio: false }
+            });
+
+            // News
             const newsContainer = document.getElementById('news-container');
-            if (typeof newsData !== 'undefined' && newsData.length > 0) {
-                newsData.forEach(article => {
-                    const card = document.createElement('div');
-                    card.className = 'news-card';
-                    const dateStr = article.seendate;
-                    let displayDate = 'Recent';
-                    if (dateStr) {
-                        const year = dateStr.substring(0, 4);
-                        const month = dateStr.substring(4, 6);
-                        const day = dateStr.substring(6, 8);
-                        displayDate = `${day}/${month}/${year}`;
-                    }
-                    card.innerHTML = `
-                        <h4 style="margin-top: 0; color: #2c3e50;">${article.title}</h4>
-                        <p style="font-size: 0.85rem; color: #777;">Source: ${article.domain} | ${displayDate}</p>
-                        <a href="${article.url}" target="_blank" style="color: #e67e22; text-decoration: none; font-weight: bold; font-size: 0.9rem;">Read Article &rarr;</a>
-                    `;
-                    newsContainer.appendChild(card);
+            if (typeof newsData !== 'undefined') {
+                newsData.slice(0, 5).forEach(article => {
+                    const div = document.createElement('div');
+                    div.className = 'news-item';
+                    div.innerHTML = `<h4>${article.title}</h4><a href="${article.url}" target="_blank">Read Intel &rarr;</a>`;
+                    newsContainer.appendChild(div);
                 });
-            } else {
-                newsContainer.innerHTML = '<p style="color: #777;">No recent news found.</p>';
             }
         };
     </script>
