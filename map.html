@@ -204,7 +204,10 @@
                 "Towns": layers.settlements, "Roads": layers.roads, "Risk Heatmap": heatmaps.risk, "Child Heatmap": heatmaps.children
             }, { collapsed: true }).addTo(map);
 
-            setView('all');
+            // Set view based on URL parameter or default to 'all'
+            const urlParams = new URLSearchParams(window.location.search);
+            const viewParam = urlParams.get('view');
+            setView(viewParam || 'all');
         } catch (e) { console.error("Map failed:", e); }
     };
 
