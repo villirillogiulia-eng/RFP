@@ -144,6 +144,27 @@
         th { text-align: left; padding: 1rem; background: #f8f9fa; color: #7f8c8d; font-size: 0.75rem; text-transform: uppercase; }
         td { padding: 1rem; border-bottom: 1px solid #eee; font-size: 0.9rem; }
 
+        .news-item.local {
+            background: #fff9f9;
+            border-left: 4px solid var(--accent);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .report-tag {
+            background: var(--accent);
+            color: white;
+            font-size: 0.6rem;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: inline-block;
+        }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.75rem; color: #7f8c8d; margin-bottom: 0.3rem; }
+        .form-control { width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem; }
+
         @media (max-width: 900px) {
             .action-center, .dashboard-grid { grid-template-columns: 1fr; }
         }
@@ -191,23 +212,40 @@
                 <p style="opacity: 0.8; max-width: 500px;">Deploy strategic interventions by analyzing the intersection of conflict zones, climate hazards, and educational infrastructure in real-time.</p>
                 <div class="btn-group">
                     <a href="map.html" class="btn btn-primary">Launch Full Dashboard &rarr;</a>
-                    <a href="map.html?view=risk" class="btn btn-outline">Analyze Hotspots</a>
+                    <a href="map.html?view=flood" class="btn btn-outline">Flood Impact View</a>
                 </div>
             </div>
+            <div class="card">
+                <h2>Field Intelligence</h2>
+                <p style="font-size: 0.8rem; color: #7f8c8d;">Local teams can flag real-time events here:</p>
+                <form id="incident-form">
+                    <div class="form-group">
+                        <label>Event Description</label>
+                        <input type="text" id="event-title" class="form-control" placeholder="e.g., Road closure near Galkayo" required>
+                    </div>
+                    <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>
+                            <label>Type</label>
+                            <select id="event-type" class="form-control">
+                                <option value="Conflict">Conflict</option>
+                                <option value="Flood">Flood</option>
+                                <option value="Access">Access Issue</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.5rem; font-size: 0.8rem;">Submit Flag</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
             <div class="card">
                 <h2>Recent Alerts</h2>
                 <div class="news-sidebar" id="news-container">
                     <!-- Loaded via JS -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Analytics Grid -->
-        <div class="dashboard-grid">
-            <div class="card">
-                <h2>District Demographic Profile</h2>
-                <div style="height: 300px;">
-                    <canvas id="demographicBarChart"></canvas>
                 </div>
             </div>
             <div class="card">
@@ -259,8 +297,66 @@
     <script src="pop_u18_data.js"></script>
     <script src="flood_data.js"></script>
     <script>
+        function loadAlerts() {
+            const newsContainer = document.getElementById('news-container');
+            newsContainer.innerHTML = '';
+
+            // 1. Load Local Reports from LocalStorage
+            const localReports = JSON.parse(localStorage.getItem('mudug_local_reports') || '[]');
+            localReports.reverse().forEach(report => {
+                const div = document.createElement('div');
+                div.className = 'news-item local';
+                div.innerHTML = `
+                    <span class="report-tag">FIELD REPORT: ${report.type}</span>
+                    <h4 style="margin: 0; color: var(--accent);">${report.title}</h4>
+                    <p style="font-size: 0.75rem; color: #7f8c8d; margin-top: 5px;">Reported: ${report.timestamp}</p>
+                `;
+                newsContainer.appendChild(div);
+            });
+
+            // 2. Load GDELT News
+            if (typeof newsData !== 'undefined') {
+                newsData.slice(0, 5).forEach(article => {
+                    const div = document.createElement('div');
+                    div.className = 'news-item';
+                    div.innerHTML = `
+                        <div style="font-size: 0.65rem; color: #95a5a6; font-weight: bold; text-transform: uppercase; margin-bottom: 2px;">Global Intelligence</div>
+                        <h4>${article.title}</h4>
+                        <a href="${article.url}" target="_blank">Read Intel &rarr;</a>
+                    `;
+                    newsContainer.appendChild(div);
+                });
+            }
+        }
+
         window.onload = function() {
             document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+            // Handle Incident Form
+            const form = document.getElementById('incident-form');
+            if (form) {
+                form.onsubmit = function(e) {
+                    e.preventDefault();
+                    const title = document.getElementById('event-title').value;
+                    const type = document.getElementById('event-type').value;
+                    const report = {
+                        title: title,
+                        type: type,
+                        timestamp: new Date().toLocaleString('en-GB'),
+                        id: Date.now()
+                    };
+                    
+                    const reports = JSON.parse(localStorage.getItem('mudug_local_reports') || '[]');
+                    reports.push(report);
+                    localStorage.setItem('mudug_local_reports', JSON.stringify(reports));
+                    
+                    document.getElementById('event-title').value = '';
+                    loadAlerts(); // Refresh display
+                    alert('Incident flagged successfully. It is now visible in the Alerts box.');
+                };
+            }
+
+            loadAlerts();
 
             // Populate KPIs
             if (typeof mudugIDPStats !== 'undefined') document.getElementById('kpi-idps').innerText = mudugIDPStats.total_idps.toLocaleString();
@@ -273,17 +369,19 @@
 
             // Populate Table
             const highRiskBody = document.getElementById('high-risk-body');
-            const sortedSchools = [...schoolData].sort((a, b) => b.risk_score - a.risk_score);
-            sortedSchools.slice(0, 10).forEach(s => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${s.name}</td>
-                    <td>${s.district}</td>
-                    <td style="text-align: center;"><span style="color: ${s.risk === 'High' ? '#e74c3c' : '#f39c12'}; font-weight: bold;">${s.risk_score}</span></td>
-                    <td style="text-align: center;">${s.distance} km</td>
-                `;
-                highRiskBody.appendChild(row);
-            });
+            if (highRiskBody) {
+                const sortedSchools = [...schoolData].sort((a, b) => b.risk_score - a.risk_score);
+                sortedSchools.slice(0, 10).forEach(s => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${s.name}</td>
+                        <td>${s.district}</td>
+                        <td style="text-align: center;"><span style="color: ${s.risk === 'High' ? '#e74c3c' : '#f39c12'}; font-weight: bold;">${s.risk_score}</span></td>
+                        <td style="text-align: center;">${s.distance} km</td>
+                    `;
+                    highRiskBody.appendChild(row);
+                });
+            }
 
             // --- Charts ---
             const ctx1 = document.getElementById('demographicBarChart').getContext('2d');
@@ -291,9 +389,12 @@
                 type: 'bar',
                 data: {
                     labels: ['Galkayo', 'Galdogob', 'Hobyo', 'Jariban', 'Harardhere'],
-                    datasets: [{ label: 'Children Under 18', data: [310956, 71306, 69161, 58438, 26271], backgroundColor: '#3498db' }]
+                    datasets: [
+                        { label: 'Total Pop', data: [501542, 115009, 111550, 94255, 42372], backgroundColor: '#1a2a3a' },
+                        { label: 'Under 18', data: [310956, 71306, 69161, 58438, 26271], backgroundColor: '#3498db' }
+                    ]
                 },
-                options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                options: { maintainAspectRatio: false }
             });
 
             const ctx2 = document.getElementById('u18ComparisonChart').getContext('2d');
@@ -322,21 +423,10 @@
                 type: 'bar',
                 data: {
                     labels: districts,
-                    datasets: [{ label: 'High Risk', data: districts.map(d => schoolData.filter(s => s.district === d && s.risk === 'High').length), backgroundColor: '#e74c3c' }]
+                    datasets: [{ label: 'High Risk Facilities', data: districts.map(d => schoolData.filter(s => s.district === d && s.risk === 'High').length), backgroundColor: '#e74c3c' }]
                 },
                 options: { maintainAspectRatio: false }
             });
-
-            // News
-            const newsContainer = document.getElementById('news-container');
-            if (typeof newsData !== 'undefined') {
-                newsData.slice(0, 5).forEach(article => {
-                    const div = document.createElement('div');
-                    div.className = 'news-item';
-                    div.innerHTML = `<h4>${article.title}</h4><a href="${article.url}" target="_blank">Read Intel &rarr;</a>`;
-                    newsContainer.appendChild(div);
-                });
-            }
         };
     </script>
 </body>
