@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mudug Education Continuity Project</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             margin: 0;
@@ -86,6 +87,18 @@
             padding-bottom: 10px;
             margin-top: 40px;
         }
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin: 30px 0;
+        }
+        .chart-box {
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            text-align: center;
+        }
         .report-section table {
             width: 100%;
             border-collapse: collapse;
@@ -124,7 +137,7 @@
         <h1>Mudug Education Continuity</h1>
         <p>Analyzing the impact of conflict on educational infrastructure in the Mudug region to ensure safe and accessible learning for all students.</p>
         <a href="map.html" class="cta-button">Launch Risk Mapping Dashboard</a>
-        <a href="#report" class="cta-button secondary">Read Risk Report</a>
+        <a href="#report" class="cta-button secondary">Read Visual Risk Report</a>
     </section>
 
     <div class="container">
@@ -155,101 +168,82 @@
             <h1>Mudug School Risk Proximity Report (2023-2024)</h1>
             <p><strong>Prepared for:</strong> EBI Education Continuity Project</p>
 
-            <h2>1. Executive Summary</h2>
-            <p>This report analyzes the proximity of educational facilities in the Mudug region to recent conflict events (2023-2024). High-risk schools are those located within 10km of a conflict point, while medium-risk schools are between 10km and 25km. The region is characterized by an extremely young demographic profile, with approximately 57% of the population under age 15.</p>
-            <ul>
-                <li><strong>Total Population (Est. 2022):</strong> 864,728</li>
-                <li><strong>Estimated Children (Under 15):</strong> 492,895</li>
-                <li><strong>Total Schools Assessed:</strong> 47</li>
-                <li><strong>High Risk (&le; 10km from conflict):</strong> 10</li>
-                <li><strong>Medium Risk (10km - 25km from conflict):</strong> 3</li>
-                <li><strong>Low Risk (> 25km from conflict):</strong> 34</li>
-            </ul>
+            <h2>1. Risk Distribution Overview</h2>
+            <p>Visual summary of school vulnerability. Analysis performed using a <strong>GeoPandas Spatial Join</strong> with mathematically verified 10,000-meter (10km) buffers around 2023-2024 conflict points. Approximately 57% of the population is under age 15, making these high-risk areas a top humanitarian priority.</p>
+            <div class="charts-container">
+                <div class="chart-box">
+                    <h3 style="color: #2c3e50;">Overall Risk Levels</h3>
+                    <canvas id="riskPieChart"></canvas>
+                </div>
+                <div class="chart-box">
+                    <h3 style="color: #2c3e50;">Risk by District</h3>
+                    <canvas id="districtBarChart"></canvas>
+                </div>
+            </div>
 
-            <h2>2. District-Level Demographic Profile</h2>
-            <p>Population estimates based on UN projections and regional demographic surveys. Note the high proportion of children in all districts.</p>
-            <table>
-                <thead>
-                    <tr>
-                        <th>District</th>
-                        <th>Total Population</th>
-                        <th>Under 15 (Est)</th>
-                        <th>Under 18 (Est)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td>Galkayo</td><td>501,542</td><td>285,879</td><td>310,956</td></tr>
-                    <tr><td>Galdogob</td><td>115,009</td><td>65,555</td><td>71,306</td></tr>
-                    <tr><td>Hobyo</td><td>111,550</td><td>63,584</td><td>69,161</td></tr>
-                    <tr><td>Jariban</td><td>94,255</td><td>53,725</td><td>58,438</td></tr>
-                    <tr><td>Harardhere</td><td>42,372</td><td>24,152</td><td>26,271</td></tr>
-                    <tr style="font-weight: bold; background: #f8f9fa;"><td>Total Mudug</td><td>864,728</td><td>492,895</td><td>536,132</td></tr>
-                </tbody>
-            </table>
+            <h2>2. District-Level Demographic Profile & Displacement</h2>
+            <p>Mudug faces significant pressure from internal displacement, with over <strong>70,000 IDPs</strong> recorded in the region. This, combined with a high proportion of children (&le;18), creates a critical need for educational stability.</p>
+            
+            <div id="hotspot-section" style="margin-bottom: 30px;">
+                <h3 style="color: #c0392b; border-left: 5px solid #e74c3c; padding-left: 10px;">Critical Hotspots (Highest Weighted Risk)</h3>
+                <p>These schools are identified as being in the most volatile zones based on cumulative conflict intensity and proximity.</p>
+                <div id="hotspot-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <!-- Top 4 hotspots will be injected here -->
+                </div>
+            </div>
 
-            <h2>3. District-Level Risk Distribution</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>District</th>
-                        <th>High Risk Schools</th>
-                        <th>Medium Risk Schools</th>
-                        <th>Low Risk Schools</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td>Gaalkacyo</td><td>7</td><td>2</td><td>32</td></tr>
-                    <tr><td>Galdogob</td><td>3</td><td>1</td><td>0</td></tr>
-                    <tr><td>Jariiban</td><td>0</td><td>0</td><td>2</td></tr>
-                </tbody>
-            </table>
+            <div id="idp-banner" style="background: #ebf5fb; padding: 20px; border-radius: 8px; border-left: 5px solid #3498db; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 style="margin: 0; color: #2980b9;">Total IDPs in Mudug Region</h3>
+                    <p style="margin: 5px 0 0 0; color: #7f8c8d;">Internally Displaced Persons (OCHA 2022)</p>
+                </div>
+                <div style="font-size: 2.5rem; font-weight: bold; color: #2c3e50;" id="idp-count-val">70,882</div>
+            </div>
+            <div class="chart-box" style="margin-bottom: 30px;">
+                <canvas id="demographicBarChart"></canvas>
+            </div>
 
-            <h2>3. Priority Action List (High & Medium Risk)</h2>
-            <p><strong>High Risk Schools (&le; 10km):</strong> Immediate assessment and protection measures recommended.</p>
-            <table>
+            <div class="chart-box" style="margin-bottom: 30px;">
+                <canvas id="u18ComparisonChart"></canvas>
+            </div>
+
+            <h2>3. Priority Action List (Weighted Risk)</h2>
+            <p><strong>High Risk Schools:</strong> Ranked by <strong>Risk Intensity Score</strong>, which factors in multiple nearby conflict events, their severity (deaths), and recency (2024 events are weighted higher).</p>
+            <table id="high-risk-table">
                 <thead>
                     <tr>
                         <th>School Name</th>
                         <th>District</th>
+                        <th>Intensity Score</th>
                         <th>Min Distance</th>
                         <th>Conflict Year</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr><td>israac Primary School</td><td>Gaalkacyo</td><td>0.51 km</td><td>2023</td></tr>
-                    <tr><td>Bahrul Ulum Primary School</td><td>Galdogob</td><td>0.64 km</td><td>2023</td></tr>
-                    <tr><td>Imaamu Shaafici Primary School</td><td>Galdogob</td><td>0.64 km</td><td>2023</td></tr>
-                    <tr><td>Herajale Primary School</td><td>Galdogob</td><td>0.64 km</td><td>2023</td></tr>
-                    <tr><td>mudug Primary School</td><td>Gaalkacyo</td><td>0.8 km</td><td>2023</td></tr>
-                    <tr><td>Madina Primary School</td><td>Gaalkacyo</td><td>0.8 km</td><td>2023</td></tr>
-                    <tr><td>Imaamu Shafici Primary School</td><td>Gaalkacyo</td><td>1.5 km</td><td>2023</td></tr>
-                    <tr><td>Ibnu Cabaas Primary School</td><td>Gaalkacyo</td><td>1.5 km</td><td>2023</td></tr>
-                    <tr><td>Agoonta Qaran Primary School</td><td>Gaalkacyo</td><td>1.89 km</td><td>2023</td></tr>
-                    <tr><td>Horumar</td><td>Gaalkacyo</td><td>2.9 km</td><td>2023</td></tr>
+                <tbody id="high-risk-body">
+                    <!-- Dynamic Rows -->
                 </tbody>
             </table>
 
-            <p><strong>Medium Risk Schools (10km - 25km):</strong> Monitoring and contingency planning recommended.</p>
-            <table>
+            <p><strong>Medium Risk Schools:</strong> Potential displacement hubs or at risk of future escalation.</p>
+            <table id="medium-risk-table">
                 <thead>
                     <tr>
                         <th>School Name</th>
                         <th>District</th>
+                        <th>Intensity Score</th>
                         <th>Min Distance</th>
                         <th>Conflict Year</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr><td>Midnimo primary school</td><td>Galdogob</td><td>16.44 km</td><td>2024</td></tr>
-                    <tr><td>Qorqora</td><td>Gaalkacyo</td><td>17.27 km</td><td>2023</td></tr>
-                    <tr><td>Docol</td><td>Gaalkacyo</td><td>17.84 km</td><td>2024</td></tr>
+                <tbody id="medium-risk-body">
+                    <!-- Dynamic Rows -->
                 </tbody>
             </table>
 
             <h2>4. Planning Recommendations</h2>
             <ol>
                 <li><strong>Galkayo Focus:</strong> Gaalkacyo remains the highest priority area, containing the majority of both high and medium-risk schools.</li>
-                <li><strong>Extended Buffer:</strong> The inclusion of an 11-25km buffer identifies 3 additional schools (Midnimo, Qorqora, Docol) that may be impacted by population displacement or road blockages.</li>
+                <li><strong>Extended Buffer:</strong> The inclusion of an 11-25km buffer identifies 3 additional schools (Midnimo, Qorqora, Docol) that may be impacted by population displacement.</li>
                 <li><strong>Contingency Hubs:</strong> The 34 low-risk schools should be evaluated for their capacity to absorb additional students during escalations.</li>
             </ol>
         </section>
@@ -259,33 +253,163 @@
         &copy; 2026 Education Continuity Project | Data Sources: OCHA, ACLED, HDX, GDELT
     </footer>
 
+    <script src="map_data.js"></script>
     <script src="news_data.js"></script>
+    <script src="pop_u18_data.js"></script>
     <script>
-        const newsContainer = document.getElementById('news-container');
-        if (typeof newsData !== 'undefined' && newsData.length > 0) {
-            newsData.forEach(article => {
+        // --- CHARTS INITIALIZATION ---
+        window.onload = function() {
+            // Update IDP count if available
+            if (typeof mudugIDPStats !== 'undefined') {
+                document.getElementById('idp-count-val').innerText = mudugIDPStats.total_idps.toLocaleString();
+            }
+
+            // Populate Tables from map_data.js
+            const highRiskBody = document.getElementById('high-risk-body');
+            const mediumRiskBody = document.getElementById('medium-risk-body');
+            
+            // Sort schools by risk score descending
+            const sortedSchools = [...schoolData].sort((a, b) => b.risk_score - a.risk_score);
+            
+            // Populate Hotspots
+            const hotspotList = document.getElementById('hotspot-list');
+            sortedSchools.slice(0, 4).forEach(school => {
                 const card = document.createElement('div');
-                card.className = 'news-card';
-                
-                const dateStr = article.seendate;
-                let displayDate = 'Recent';
-                if (dateStr) {
-                    const year = dateStr.substring(0, 4);
-                    const month = dateStr.substring(4, 6);
-                    const day = dateStr.substring(6, 8);
-                    displayDate = `${day}/${month}/${year}`;
-                }
-                
+                card.style = "background: #fff; padding: 15px; border: 1px solid #f5b7b1; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center;";
                 card.innerHTML = `
-                    <h4 style="margin-top: 0; color: #2c3e50;">${article.title}</h4>
-                    <p style="font-size: 0.85rem; color: #777;">Source: ${article.domain} | ${displayDate}</p>
-                    <a href="${article.url}" target="_blank" style="color: #e67e22; text-decoration: none; font-weight: bold; font-size: 0.9rem;">Read Article &rarr;</a>
+                    <h4 style="margin: 0; color: #c0392b;">${school.name}</h4>
+                    <p style="font-size: 0.8rem; color: #7f8c8d; margin: 5px 0;">${school.district}</p>
+                    <div style="font-size: 1.2rem; font-weight: bold; color: #e74c3c;">${school.risk_score}</div>
+                    <div style="font-size: 0.7rem; color: #999;">Intensity Score</div>
                 `;
-                newsContainer.appendChild(card);
+                hotspotList.appendChild(card);
             });
-        } else {
-            newsContainer.innerHTML = '<p style="color: #777;">No recent conflict-related news found in the last 24 hours.</p>';
-        }
+
+            sortedSchools.forEach(school => {
+                const row = `<tr>
+                    <td>${school.name}</td>
+                    <td>${school.district}</td>
+                    <td style="font-weight: bold; color: ${school.risk === 'High' ? '#e74c3c' : '#f39c12'}">${school.risk_score}</td>
+                    <td>${school.distance} km</td>
+                    <td>${school.conflict_year}</td>
+                </tr>`;
+                
+                if (school.risk === 'High') {
+                    highRiskBody.innerHTML += row;
+                } else if (school.risk === 'Medium') {
+                    mediumRiskBody.innerHTML += row;
+                }
+            });
+
+            // Risk Pie Chart
+            const highCount = schoolData.filter(s => s.risk === 'High').length;
+            const medCount = schoolData.filter(s => s.risk === 'Medium').length;
+            const lowCount = schoolData.filter(s => s.risk === 'Low').length;
+
+            const riskCtx = document.getElementById('riskPieChart').getContext('2d');
+            new Chart(riskCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['High Risk (&le;10km)', 'Medium Risk (11-25km)', 'Low Risk (>25km)'],
+                    datasets: [{
+                        data: [highCount, medCount, lowCount],
+                        backgroundColor: ['#e74c3c', '#f39c12', '#2ecc71'],
+                        hoverOffset: 4
+                    }]
+                },
+                options: { plugins: { legend: { position: 'bottom' } } }
+            });
+
+            // District Risk Bar Chart
+            const districts = [...new Set(schoolData.map(s => s.district))];
+            const distDatasets = [
+                { label: 'High Risk', data: districts.map(d => schoolData.filter(s => s.district === d && s.risk === 'High').length), backgroundColor: '#e74c3c' },
+                { label: 'Medium Risk', data: districts.map(d => schoolData.filter(s => s.district === d && s.risk === 'Medium').length), backgroundColor: '#f39c12' },
+                { label: 'Low Risk', data: districts.map(d => schoolData.filter(s => s.district === d && s.risk === 'Low').length), backgroundColor: '#2ecc71' }
+            ];
+
+            const distCtx = document.getElementById('districtBarChart').getContext('2d');
+            new Chart(distCtx, {
+                type: 'bar',
+                data: {
+                    labels: districts,
+                    datasets: distDatasets
+                },
+                options: {
+                    scales: { x: { stacked: true }, y: { stacked: true } },
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+
+            // Demographic Profile Chart
+            const demoCtx = document.getElementById('demographicBarChart').getContext('2d');
+            new Chart(demoCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Galkayo', 'Galdogob', 'Hobyo', 'Jariban', 'Harardhere'],
+                    datasets: [
+                        { label: 'Total Population', data: [501542, 115009, 111550, 94255, 42372], backgroundColor: '#34495e' },
+                        { label: 'Children Under 18', data: [310956, 71306, 69161, 58438, 26271], backgroundColor: '#3498db' }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y',
+                    plugins: { 
+                        title: { display: true, text: 'District Demographic Profile' },
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // Under-18 Comparison Chart
+            const u18Ctx = document.getElementById('u18ComparisonChart').getContext('2d');
+            new Chart(u18Ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['IDPs in Rural Settlements', 'Resident Children in Cities'],
+                    datasets: [{
+                        label: 'Children Under 18 (Estimated)',
+                        data: [popU18Data.idps_u18_settlements, popU18Data.residents_u18_cities],
+                        backgroundColor: ['#e67e22', '#2980b9'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    plugins: {
+                        title: { display: true, text: 'Vulnerable Population Comparison (Under 18)' },
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // --- NEWS LOADER ---
+            const newsContainer = document.getElementById('news-container');
+            if (typeof newsData !== 'undefined' && newsData.length > 0) {
+                newsData.forEach(article => {
+                    const card = document.createElement('div');
+                    card.className = 'news-card';
+                    const dateStr = article.seendate;
+                    let displayDate = 'Recent';
+                    if (dateStr) {
+                        const year = dateStr.substring(0, 4);
+                        const month = dateStr.substring(4, 6);
+                        const day = dateStr.substring(6, 8);
+                        displayDate = `${day}/${month}/${year}`;
+                    }
+                    card.innerHTML = `
+                        <h4 style="margin-top: 0; color: #2c3e50;">${article.title}</h4>
+                        <p style="font-size: 0.85rem; color: #777;">Source: ${article.domain} | ${displayDate}</p>
+                        <a href="${article.url}" target="_blank" style="color: #e67e22; text-decoration: none; font-weight: bold; font-size: 0.9rem;">Read Article &rarr;</a>
+                    `;
+                    newsContainer.appendChild(card);
+                });
+            } else {
+                newsContainer.innerHTML = '<p style="color: #777;">No recent news found.</p>';
+            }
+        };
     </script>
 </body>
 </html>

@@ -6,136 +6,250 @@
     <title>Mudug School Risk Mapping Dashboard</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
     <style>
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; }
-        header { background: #2c3e50; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        #map { height: calc(100vh - 80px); width: 100%; }
-        .legend { background: white; padding: 10px; line-height: 1.5em; border-radius: 5px; box-shadow: 0 0 15px rgba(0,0,0,0.2); font-size: 14px; }
-        .legend i { width: 18px; height: 18px; float: left; margin-right: 8px; opacity: 0.7; border-radius: 50%; }
-        .info-panel { position: absolute; top: 100px; right: 20px; z-index: 1000; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 280px; max-height: 80vh; overflow-y: auto; }
-        .risk-high { color: #e74c3c; font-weight: bold; }
-        .risk-medium { color: #f39c12; font-weight: bold; }
-        .risk-low { color: #2ecc71; font-weight: bold; }
-        .pop-table { width: 100%; font-size: 12px; border-collapse: collapse; margin-top: 10px; }
-        .pop-table th, .pop-table td { text-align: left; padding: 4px; border-bottom: 1px solid #eee; }
-        .pop-table th { background: #f8f9fa; }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; display: flex; flex-direction: column; height: 100vh; }
+        header { background: #2c3e50; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0; }
+        #main-container { display: flex; flex: 1; overflow: hidden; }
+        #map { flex: 1; }
+        .sidebar { width: 320px; background: white; border-left: 1px solid #ddd; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; box-shadow: -2px 0 5px rgba(0,0,0,0.05); }
+        .view-btn { width: 100%; padding: 12px; border: none; border-radius: 6px; background: #ecf0f1; color: #2c3e50; font-weight: bold; cursor: pointer; transition: all 0.2s; text-align: left; display: flex; align-items: center; gap: 10px; }
+        .view-btn:hover { background: #dde4e6; }
+        .view-btn.active { background: #3498db; color: white; }
+        .insight-card { background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #3498db; font-size: 0.9rem; }
+        .legend { background: white; padding: 12px; line-height: 1.5em; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.1); font-size: 13px; border: 1px solid #eee; }
+        .legend h4 { margin: 0 0 10px 0; font-size: 14px; color: #2c3e50; }
+        .legend i { width: 14px; height: 14px; float: left; margin-right: 8px; opacity: 0.8; border-radius: 50%; margin-top: 3px; }
+        .status-chip { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; }
+        .status-good { background: #d4edda; color: #155724; }
+        .status-warn { background: #fff3cd; color: #856404; }
+        .status-danger { background: #f8d7da; color: #721c24; }
+        .control-group h4 { margin-bottom: 10px; color: #7f8c8d; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>Mudug School Risk & Population Mapping</h1>
-    <div style="display: flex; gap: 20px; align-items: center;">
-        <span>2023 - 2024 Data Analysis</span>
-        <a href="index.html" style="color: #ecf0f1; text-decoration: none; font-size: 0.9rem; border: 1px solid #ecf0f1; padding: 4px 8px; border-radius: 4px;">&larr; Back to Landing</a>
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <h1 style="margin: 0; font-size: 1.4rem;">Mudug Education Explorer</h1>
+        <span style="background: #e74c3c; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold;">LIVE DATA</span>
+    </div>
+    <div style="display: flex; gap: 15px; align-items: center;">
+        <a href="index.html" style="color: #ecf0f1; text-decoration: none; font-size: 0.9rem; border: 1px solid #ecf0f1; padding: 6px 12px; border-radius: 4px;">&larr; Exit to Report</a>
     </div>
 </header>
 
-<div id="map"></div>
+<div id="main-container">
+    <div id="map"></div>
+    
+    <div class="sidebar">
+        <div class="control-group">
+            <h4>Safety Dashboard</h4>
+            <button class="view-btn active" onclick="setView('all')">
+                <span>🔥</span> Comprehensive Risk
+            </button>
+            <button class="view-btn" onclick="setView('default')">
+                <span>📍</span> Basic Overview
+            </button>
+            <button class="view-btn" onclick="setView('risk')">
+                <span>⚔️</span> Conflict Impact
+            </button>
+            <button class="view-btn" onclick="setView('flood')">
+                <span>🌊</span> Flood Impact
+            </button>
+            <button class="view-btn" onclick="setView('children')">
+                <span>👶</span> Child Hotspots
+            </button>
+        </div>
 
-<div class="info-panel">
-    <h3>Summary</h3>
-    <div id="stats">
-        <p>Total Schools: <span id="total-schools">0</span></p>
-        <p>High Risk: <span id="high-risk" class="risk-high">0</span></p>
-        <p>Medium Risk: <span id="medium-risk" class="risk-medium">0</span></p>
-        <p>Low Risk: <span id="low-risk" class="risk-low">0</span></p>
+        <div class="control-group">
+            <h4>Summary Insight</h4>
+            <div id="dynamic-insight" class="insight-card">
+                Welcome to the Mudug Education Explorer. This map shows 47 schools and their relationship to recent conflict events. Use the buttons above to filter the data.
+            </div>
+        </div>
+
+        <div class="control-group">
+            <h4>Regional Snapshot</h4>
+            <div style="background: #2c3e50; color: white; padding: 15px; border-radius: 8px;">
+                <div style="font-size: 0.8rem; opacity: 0.8;">Total Region IDPs</div>
+                <div style="font-size: 1.5rem; font-weight: bold;" id="idp-val-sidebar">70,882</div>
+                <div style="margin-top: 10px; font-size: 0.8rem; opacity: 0.8;">High Risk Schools</div>
+                <div style="font-size: 1.2rem; font-weight: bold; color: #e74c3c;" id="high-risk-sidebar">10</div>
+            </div>
+        </div>
+        
+        <div id="legend-container"></div>
     </div>
-
-    <h3 style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px;">Child Population (Est)</h3>
-    <table class="pop-table">
-        <thead>
-            <tr>
-                <th>District</th>
-                <th>Total Pop</th>
-                <th>Under 15</th>
-            </tr>
-        </thead>
-        <tbody id="pop-body">
-            <!-- Populated by JS -->
-        </tbody>
-    </table>
-    <p style="font-size: 10px; color: #777; margin-top: 5px;">*Data based on 2019-2022 UN projections.</p>
 </div>
+
+<!-- INFO PANEL REMOVED IN FAVOR OF SIDEBAR -->
 
 <script src="map_data.js"></script>
 <script src="pop_data.js"></script>
+<script src="school_status_data.js"></script>
+<script src="settlements_data.js"></script>
+<script src="flood_data.js"></script>
+<script src="mudug_roads.js"></script>
+<script src="mudug_boundary.js"></script>
 <script>
-    // Initialize Map centered on Mudug, Somalia
-    const map = L.map('map').setView([6.5, 47.5], 7);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
-    // Marker Icons
-    const schoolIcon = (color) => L.divIcon({
-        className: 'custom-div-icon',
-        html: `<div style="background-color: ${color}; width: 15px; height: 15px; border-radius: 50%; border: 2px solid white;"></div>`,
-        iconSize: [15, 15],
-        iconAnchor: [7, 7]
-    });
-
-    const conflictIcon = (year) => L.divIcon({
-        className: 'conflict-icon',
-        html: `<div style="background-color: ${year === 2024 ? '#34495e' : '#95a5a6'}; width: 6px; height: 6px; border-radius: 50%; opacity: 0.8;"></div>`,
-        iconSize: [6, 6],
-        iconAnchor: [3, 3]
-    });
-
-    // Populate Stats
-    document.getElementById('total-schools').innerText = schoolData.length;
-    document.getElementById('high-risk').innerText = schoolData.filter(s => s.risk === 'High').length;
-    document.getElementById('medium-risk').innerText = schoolData.filter(s => s.risk === 'Medium').length;
-    document.getElementById('low-risk').innerText = schoolData.filter(s => s.risk === 'Low').length;
-
-    // Populate Population Table
-    const popBody = document.getElementById('pop-body');
-    populationData.forEach(p => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${p.district}</td>
-            <td>${p.total_pop.toLocaleString()}</td>
-            <td>${p.children_u15.toLocaleString()}</td>
-        `;
-        popBody.appendChild(row);
-    });
-
-    // Add Conflict Events
-    conflictData.forEach(event => {
-        L.marker([event.lat, event.lon], { icon: conflictIcon(event.year) })
-            .bindPopup(`<b>Conflict (${event.year}): ${event.name}</b><br>Actors: ${event.side_a} vs ${event.side_b}`)
-            .addTo(map);
-    });
-
-    // Add Schools
-    schoolData.forEach(school => {
-        const color = school.risk === 'High' ? '#e74c3c' : (school.risk === 'Medium' ? '#f39c12' : '#2ecc71');
-        L.marker([school.lat, school.lon], { icon: schoolIcon(color) })
-            .bindPopup(`
-                <b>${school.name}</b><br>
-                District: ${school.district}<br>
-                Risk: <span class="risk-${school.risk.toLowerCase()}">${school.risk}</span><br>
-                Nearest Conflict Year: ${school.conflict_year}<br>
-                Distance: ${school.distance} km
-            `)
-            .addTo(map);
-    });
-
-    // Legend
-    const legend = L.control({position: 'bottomleft'});
-    legend.onAdd = function (map) {
-        const div = L.DomUtil.create('div', 'legend');
-        div.innerHTML += '<h4>Legend</h4>';
-        div.innerHTML += '<i style="background: #e74c3c"></i> High Risk (&le;10km)<br>';
-        div.innerHTML += '<i style="background: #f39c12"></i> Medium Risk (10-25km)<br>';
-        div.innerHTML += '<i style="background: #2ecc71"></i> Low Risk (>25km)<br>';
-        div.innerHTML += '<i style="background: #34495e"></i> Conflict Event (2024)<br>';
-        div.innerHTML += '<i style="background: #95a5a6"></i> Conflict Event (2023)<br>';
-        return div;
+    // --- GLOBAL STATE ---
+    let map;
+    const layers = {
+        schools: L.layerGroup(),
+        conflicts: L.layerGroup(),
+        settlements: L.layerGroup(),
+        floods: L.layerGroup(),
+        roads: L.layerGroup(),
+        boundary: L.layerGroup()
     };
-    legend.addTo(map);
+    let heatmaps = {
+        risk: null,
+        children: null,
+        flood: null
+    };
 
+    // --- HELPERS ---
+    const safeUpdate = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
+
+    // --- INITIALIZATION ---
+    window.onload = function() {
+        console.log("Dashboard initializing...");
+        try {
+            // 1. Initialize Map
+            map = L.map('map').setView([6.5, 47.5], 7);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            // 2. Initialize Heatmaps
+            heatmaps.risk = L.heatLayer([], { radius: 35, blur: 15, maxZoom: 10, gradient: {0.4: 'blue', 0.6: 'cyan', 0.7: 'lime', 0.8: 'yellow', 1: 'red'} });
+            heatmaps.children = L.heatLayer([], { radius: 40, blur: 20, maxZoom: 10, gradient: {0.2: 'purple', 0.4: 'blue', 0.6: 'green', 0.8: 'yellow', 1: 'orange'} });
+            heatmaps.flood = L.heatLayer([], { radius: 45, blur: 25, maxZoom: 10, gradient: {0.4: 'blue', 0.6: 'cyan', 0.8: 'white'} });
+
+            // 3. Process Data
+            if (typeof mudugBoundary !== 'undefined') {
+                L.geoJSON(mudugBoundary, { style: { color: "#2c3e50", weight: 2, opacity: 0.5, dashArray: '5, 5', fillOpacity: 0 } }).addTo(layers.boundary);
+            }
+            if (typeof mudugRoads !== 'undefined') {
+                L.geoJSON(mudugRoads, { style: { color: "#3498db", weight: 3, opacity: 0.7 } }).addTo(layers.roads);
+            }
+            if (typeof settlementData !== 'undefined') {
+                const childPoints = [];
+                settlementData.forEach(s => {
+                    if(!s.lat || !s.lon) return;
+                    const iconSize = s.type === 'city' ? 12 : (s.type === 'town' ? 8 : 4);
+                    const statusClass = s.accessible === 'Accessible' ? 'status-good' : (s.accessible === 'Inaccesible' ? 'status-danger' : 'status-warn');
+                    L.marker([s.lat, s.lon], { 
+                        icon: L.divIcon({
+                            className: 'settlement-icon',
+                            html: `<div style="background-color: white; border: 2px solid #2c3e50; width: ${iconSize}px; height: ${iconSize}px; border-radius: 50%;"></div>`,
+                            iconSize: [iconSize, iconSize]
+                        })
+                    }).bindPopup(`<h3>${s.name}</h3><span class="status-chip ${statusClass}">${s.accessible || 'Unknown'}</span><br>U18 Pop: ${(s.u18||0).toLocaleString()}`).addTo(layers.settlements);
+                    if (s.u18 > 0) childPoints.push([s.lat, s.lon, Math.min(s.u18/5000, 1)]);
+                });
+                heatmaps.children.setLatLngs(childPoints);
+            }
+            if (typeof conflictData !== 'undefined') {
+                conflictData.forEach(c => {
+                    if(!c.lat || !c.lon) return;
+                    L.marker([c.lat, c.lon], { 
+                        icon: L.divIcon({
+                            className: 'conflict-icon',
+                            html: `<div style="background-color: ${c.year === 2024 ? '#34495e' : '#95a5a6'}; width: 6px; height: 6px; border-radius: 50%;"></div>`,
+                            iconSize: [6, 6]
+                        })
+                    }).bindPopup(`<b>Conflict Case</b><br>${c.name}<br>${c.year}`).addTo(layers.conflicts);
+                });
+            }
+            if (typeof floodData !== 'undefined') {
+                const fPoints = [];
+                floodData.forEach(f => {
+                    if(!f.lat || !f.lon) return;
+                    L.marker([f.lat, f.lon], { 
+                        icon: L.divIcon({ className: 'flood-icon', html: `<div style="color: #3498db; font-size: 20px;">🌊</div>`, iconSize: [20, 20] })
+                    }).bindPopup(`<b>Flood Event</b><br>${f.name}<br>Date: ${f.date}<br>New Arrivals: ${f.arrivals}`).addTo(layers.floods);
+                    fPoints.push([f.lat, f.lon, 0.8]);
+                });
+                heatmaps.flood.setLatLngs(fPoints);
+            }
+            if (typeof schoolData !== 'undefined') {
+                const rPoints = [];
+                schoolData.forEach(sch => {
+                    if(!sch.lat || !sch.lon) return;
+                    const status = (typeof schoolStatusData !== 'undefined') ? (schoolStatusData.find(s => s.name === sch.name) || { boys: 0, girls: 0 }) : { boys: 0, girls: 0 };
+                    const active = (status.boys + status.girls) > 0;
+                    const color = sch.risk === 'High' ? '#e74c3c' : (sch.risk === 'Medium' ? '#f39c12' : '#2ecc71');
+                    L.marker([sch.lat, sch.lon], {
+                        icon: L.divIcon({
+                            className: 'school-icon',
+                            html: `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid ${active ? 'white' : '#34495e'};"></div>`,
+                            iconSize: [14, 14]
+                        })
+                    }).bindPopup(`<b>${sch.name}</b><br>Risk: ${sch.risk}<br>Status: ${active ? 'Active' : 'Possible Disruption'}`).addTo(layers.schools);
+                    if (sch.risk_score > 0) rPoints.push([sch.lat, sch.lon, Math.min(sch.risk_score/10, 1)]);
+                });
+                heatmaps.risk.setLatLngs(rPoints);
+            }
+
+            // 4. Finalize UI
+            layers.boundary.addTo(map);
+            layers.roads.addTo(map);
+            if (typeof mudugIDPStats !== 'undefined') safeUpdate('idp-val-sidebar', mudugIDPStats.total_idps.toLocaleString());
+            if (typeof schoolData !== 'undefined') safeUpdate('high-risk-sidebar', schoolData.filter(s => s.risk === 'High').length);
+
+            L.control.layers(null, {
+                "Schools": layers.schools, "Conflicts": layers.conflicts, "Floods": layers.floods,
+                "Towns": layers.settlements, "Roads": layers.roads, "Risk Heatmap": heatmaps.risk, "Child Heatmap": heatmaps.children
+            }, { collapsed: true }).addTo(map);
+
+            setView('all');
+        } catch (e) { console.error("Map failed:", e); }
+    };
+
+    function setView(type) {
+        if (!map) return;
+        document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+        const btn = document.querySelector(`button[onclick="setView('${type}')"]`);
+        if (btn) btn.classList.add('active');
+
+        Object.values(layers).forEach(l => map.removeLayer(l));
+        Object.values(heatmaps).forEach(h => { if(h) map.removeLayer(h); });
+        layers.boundary.addTo(map);
+
+        const insightEl = document.getElementById('dynamic-insight');
+        if (type === 'all') {
+            layers.schools.addTo(map); layers.conflicts.addTo(map); layers.floods.addTo(map); layers.roads.addTo(map); heatmaps.risk.addTo(map);
+            insightEl.innerText = "COMPREHENSIVE VIEW: Overlaying highways, conflict hotspots, and flood events.";
+        } else if (type === 'default') {
+            layers.schools.addTo(map); layers.settlements.addTo(map); layers.roads.addTo(map);
+            insightEl.innerText = "Basic overview of schools, towns, and major roads.";
+        } else if (type === 'risk') {
+            heatmaps.risk.addTo(map); layers.conflicts.addTo(map); layers.schools.addTo(map);
+            insightEl.innerText = "Focusing on conflict-related education disruption.";
+        } else if (type === 'flood') {
+            heatmaps.flood.addTo(map); layers.floods.addTo(map); layers.schools.addTo(map);
+            insightEl.innerText = "FLOOD IMPACT: Showing settlements affected by flash floods in 2025.";
+        } else if (type === 'children') {
+            heatmaps.children.addTo(map); layers.settlements.addTo(map);
+            insightEl.innerText = "Identifying high-density areas of children under 18.";
+        }
+        updateLegend(type);
+    }
+
+    function updateLegend(type) {
+        const el = document.getElementById('legend-container');
+        let html = '<div class="legend"><h4>Legend</h4>';
+        html += '<div><i style="background: #e74c3c"></i> High Risk School</div>';
+        html += '<div><i style="background: #2ecc71"></i> Low Risk School</div>';
+        html += '<div><i style="background: #3498db; height: 3px; border-radius: 0; width: 14px; margin-top: 8px;"></i> Major Highway</div>';
+        if (type === 'all' || type === 'risk') html += '<div><i style="background: #34495e"></i> Conflict Event</div>';
+        if (type === 'all' || type === 'flood') html += '<div><span>🌊</span> Flood Event (2025)</div>';
+        if (type === 'children') html += '<div><i style="background: orange; opacity: 0.6;"></i> Child Hotspot</div>';
+        html += '</div>';
+        el.innerHTML = html;
+    }
 </script>
 </body>
 </html>
