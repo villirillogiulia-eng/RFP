@@ -240,29 +240,30 @@
             </div>
         </div>
 
-        <!-- Dashboard Grid -->
+        <!-- Analytics Grid -->
         <div class="dashboard-grid">
             <div class="card">
-                <h2>Recent Alerts</h2>
+                <h2>Real-Time Intelligence</h2>
                 <div class="news-sidebar" id="news-container">
                     <!-- Loaded via JS -->
                 </div>
             </div>
             <div class="card">
-                <h2>Vulnerable Child Comparison</h2>
+                <h2>Vulnerable Population (Under 18)</h2>
                 <div style="height: 300px;">
                     <canvas id="u18ComparisonChart"></canvas>
                 </div>
             </div>
-            <div class="card" style="grid-column: span 2;">
-                <h2>Risk Distribution Overview</h2>
-                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
-                    <div style="height: 250px;">
-                        <canvas id="riskPieChart"></canvas>
-                    </div>
-                    <div style="height: 250px;">
-                        <canvas id="districtBarChart"></canvas>
-                    </div>
+            <div class="card">
+                <h2>Overall Risk Distribution</h2>
+                <div style="height: 300px;">
+                    <canvas id="riskPieChart"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <h2>High-Risk Schools by District</h2>
+                <div style="height: 300px;">
+                    <canvas id="districtBarChart"></canvas>
                 </div>
             </div>
         </div>
@@ -384,19 +385,6 @@
             }
 
             // --- Charts ---
-            const ctx1 = document.getElementById('demographicBarChart').getContext('2d');
-            new Chart(ctx1, {
-                type: 'bar',
-                data: {
-                    labels: ['Galkayo', 'Galdogob', 'Hobyo', 'Jariban', 'Harardhere'],
-                    datasets: [
-                        { label: 'Total Pop', data: [501542, 115009, 111550, 94255, 42372], backgroundColor: '#1a2a3a' },
-                        { label: 'Under 18', data: [310956, 71306, 69161, 58438, 26271], backgroundColor: '#3498db' }
-                    ]
-                },
-                options: { maintainAspectRatio: false }
-            });
-
             const ctx2 = document.getElementById('u18ComparisonChart').getContext('2d');
             new Chart(ctx2, {
                 type: 'bar',
